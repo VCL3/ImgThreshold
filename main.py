@@ -20,8 +20,8 @@ def imageThreshold(frame):
 	threshold = cv2.adaptiveThreshold(display_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2)
 	return threshold
 
-def morpho(img):
-	kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4, 4))
+def opening(img, kernalx = 3, kernaly = 3):
+	kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernalx, kernaly))
 	return cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
 
 def make_mask(img):
@@ -43,7 +43,8 @@ def make_mask(img):
 		mu = info['mean']
 		b1 = info['b1']
 		b2 = info['b2']
-	cv2.imshow('Video', display)
+
+	return display
 
 # Make a new window named 'Main'.
 win = 'Main'
@@ -86,14 +87,19 @@ while 1:
 	threshold = imageThreshold(frame)
 
 	# 2. Morphological Operator
-	morph = morpho(threshold)
-	cv2.imshow('Video',morph)
+	morph = opening(threshold)
 	
-	# 3. Connected Components Analysis
-	make_mask(morph)
+	# 3. Connected Components Analysis + making mask
+	mask = make_mask(morph)
 
-	# Apply Threshold
-	while cv2.waitKey(15) < 0: pass
+	# 4. Refining the mask with another opening
+	mask = opening(mask,4,4)
+	bmask = mask.view(numpy.bool)
+	display = numpy.zeros((frame.shape[0],frame.shape[1],3),'uint8')
+	display[bmask] = frame[bmask]
+	cv2.imshow('Video', display)
+
+	cv2.waitKey(5)
 """ 
 sources = []
 # Open images
