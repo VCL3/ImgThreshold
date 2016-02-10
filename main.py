@@ -19,7 +19,7 @@ def imageThreshold(frame):
     # Apply Threshold
     threshold = cv2.adaptiveThreshold(display_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C,\
             cv2.THRESH_BINARY, 11, 2)
-    cv2.imshow('Video', display_gray)
+    cv2.imshow('Video', threshold)
 
 # Make a new window named 'Main'.
 win = 'Main'
