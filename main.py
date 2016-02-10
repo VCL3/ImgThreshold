@@ -76,7 +76,7 @@ if not ok or frame is None:
 
 # Initialize writer
 fourcc, ext = (cv2.VideoWriter_fourcc('D','I','V','X'),'avi')
-filename = 'retreived' + ext
+filename = 'retreived.' + ext
 
 # Process every frame
 while 1:
