@@ -74,6 +74,10 @@ if not ok or frame is None:
 	print 'No frame in video'
 	sys.exit(3)
 
+# Initialize writer
+fourcc, ext = (cv2.VideoWriter_fourcc('D','I','V','X'),'avi')
+filename = 'retreived' + ext
+
 # Process every frame
 while 1:
 	# Get frame
