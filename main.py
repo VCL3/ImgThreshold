@@ -154,7 +154,7 @@ while 1:
 
 	# Write if we have a writer.
 	if writer:
-		writer.write(frame)
+		writer.write(display)
 	
 	cv2.waitKey(5)
 
