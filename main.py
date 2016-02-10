@@ -17,9 +17,12 @@ def imageThreshold(frame):
     cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY, display_gray)
 
     # Apply Threshold
-    threshold = cv2.adaptiveThreshold(display_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C,\
-            cv2.THRESH_BINARY, 11, 2)
-    cv2.imshow('Video', threshold)
+    threshold = cv2.adaptiveThreshold(display_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
+	return threshold
+
+def mopho(img):
+	kernal = cv2.getStructuringElement(cv2.MORPH_RECT,3)
+	return cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernal)
 
 # Make a new window named 'Main'.
 win = 'Main'
@@ -59,9 +62,11 @@ while 1:
 		break
 
 	# 1. Image Thresholding 
-	imageThreshold(frame)
+	threshold = imageThreshold(frame)
 
 	# 2. Morphological Operator
+	morph = morpho(threshold)
+	cv2.imshow('Video',morph)
 
 	# Apply Threshold
 	while cv2.waitKey(15) < 0: pass
