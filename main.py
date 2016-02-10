@@ -9,20 +9,41 @@ import sys
 import cvk2
 
 def imageThreshold(frame):
-    # Take h, w of original image, convert into grayscale
-    h = frame.shape[0]
-    w = frame.shape[1]
-    display_gray = numpy.empty((h, w), 'uint8')
+	# Take h, w of original image, convert into grayscale
+	h = frame.shape[0]
+	w = frame.shape[1]
+	display_gray = numpy.empty((h, w), 'uint8')
 
-    cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY, display_gray)
+	cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY, display_gray)
 
-    # Apply Threshold
-    threshold = cv2.adaptiveThreshold(display_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
-    return threshold
+	# Apply Threshold
+	threshold = cv2.adaptiveThreshold(display_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2)
+	return threshold
 
 def morpho(img):
-	kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (4, 4))
-	return cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
+	kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (4, 4))
+	return cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
+
+def make_mask(img):
+	work = img.copy()
+	display = numpy.zeros((img.shape[0], img.shape[1], 3),
+					  dtype='uint8')
+	img, contours, hierarchy = cv2.findContours(work, cv2.RETR_CCOMP,
+											  cv2.CHAIN_APPROX_SIMPLE)
+	# For each contour in the image
+	for j in range(len(contours)):
+
+		# Draw the contour as a colored region on the display image.
+		cv2.drawContours(display, contours, j, (255, 255, 255), -1)
+
+		# Compute some statistics about this contour.
+		info = cvk2.getcontourinfo(contours[j])
+
+		# Mean location and basis vectors can be useful.
+		mu = info['mean']
+		b1 = info['b1']
+		b2 = info['b2']
+	cv2.imshow('Video', display)
 
 # Make a new window named 'Main'.
 win = 'Main'
@@ -54,7 +75,7 @@ if not ok or frame is None:
 
 # Process every frame
 while 1:
-    # Get frame
+	# Get frame
 	ok, frame = capture.read(frame)
 
 	# Bail if none
@@ -67,6 +88,9 @@ while 1:
 	# 2. Morphological Operator
 	morph = morpho(threshold)
 	cv2.imshow('Video',morph)
+	
+	# 3. Connected Components Analysis
+	make_mask(morph)
 
 	# Apply Threshold
 	while cv2.waitKey(15) < 0: pass
@@ -75,18 +99,18 @@ sources = []
 # Open images
 if len(sys.argv) > 2:
 
-    num = int(sys.argv[1])
+	num = int(sys.argv[1])
 
-    for n in range(num):
-        try:
-            sources.append(cv2.imread(sys.argv[n+2]))
-        except:
-            pass
+	for n in range(num):
+		try:
+			sources.append(cv2.imread(sys.argv[n+2]))
+		except:
+			pass
 # If open file unsuccesfully
 if len(sources) < num:
-    print "Execute main.py followed by the number of images and\
+	print "Execute main.py followed by the number of images and\
 		the corresponding sources"
-    print "E.g. python main.py 1 img/purpleflower.jpg"
-    sys.exit(1)
+	print "E.g. python main.py 1 img/purpleflower.jpg"
+	sys.exit(1)
 """
 
