@@ -26,9 +26,15 @@ elif len(sys.argv) >= 2:
 	if capture:
 		print 'Opened file', input_filename
 	# Quit program if failed to open video
-	if not capture or not capture.isOpen():
+	if not capture or not capture.isOpened():
 		print 'Error opening video'
 		sys.exit(2)
+
+# Fetch the first frame
+ok, frame = capture.read()
+if not ok or frame is None:
+	print 'No frame in video'
+	sys.exit(3)
 
 # Process every frame
 while 1:
@@ -50,7 +56,7 @@ while 1:
 	# Apply Threshold
 	threshold = cv2.adaptiveThreshold(display_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C,\
 			cv2.THRESH_BINARY, 11, 2)
-	cv2.imshow(display_gray)
+	cv2.imshow(win, display_gray)
 
 	# 2. Morphological Operator
 
