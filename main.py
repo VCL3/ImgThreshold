@@ -19,7 +19,7 @@ def imageThreshold(frame):
     # Apply Threshold
     threshold = cv2.adaptiveThreshold(display_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C,\
             cv2.THRESH_BINARY, 11, 2)
-    cv2.imshow(display_gray)
+    cv2.imshow('Video', display_gray)
 
 # Make a new window named 'Main'.
 win = 'Main'
@@ -58,16 +58,14 @@ while 1:
 	if not ok or frame is None:
 		break
 
-	# 1. Image Thresholding
-    imageThreshold(frame)
+	# 1. Image Thresholding 
+	imageThreshold(frame)
+
 	# 2. Morphological Operator
 
 	# Apply Threshold
-	threshold = cv2.adaptiveThreshold(display_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C,\
-			cv2.THRESH_BINARY, 11, 2)
-	cv2.imshow(win, display_gray)
-
-"""
+	while cv2.waitKey(15) < 0: pass
+""" 
 sources = []
 # Open images
 if len(sys.argv) > 2:
