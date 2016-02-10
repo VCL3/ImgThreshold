@@ -18,11 +18,11 @@ def imageThreshold(frame):
 
     # Apply Threshold
     threshold = cv2.adaptiveThreshold(display_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
-	return threshold
+    return threshold
 
-def mopho(img):
-	kernal = cv2.getStructuringElement(cv2.MORPH_RECT,3)
-	return cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernal)
+def morpho(img):
+	kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (4, 4))
+	return cv2.morphologyEx(img, cv2.MORPH_CLOSE, kernel)
 
 # Make a new window named 'Main'.
 win = 'Main'
