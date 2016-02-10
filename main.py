@@ -20,6 +20,43 @@ def imageThreshold(frame):
 	threshold = cv2.adaptiveThreshold(display_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2)
 	return threshold
 
+def colorThreshold(orig):
+	h = orig.shape[0]
+	w = orig.shape[1]
+
+	mask = numpy.zeros((h, w), 'uint8')
+	orig_float = orig.astype(float)
+
+	# Define the RGB color for the petals of the flower.
+	color = [[[34, 217, 0]]]
+
+	# For each pixel in the original image, subtract the petal color.
+	dists_float = orig_float - numpy.tile(color, (h, w, 1))
+
+	# Square the differences.
+	dists_float = dists_float*dists_float
+
+	# Sum across RGB to get one number per pixel. The result is an array
+	dists_float = dists_float.sum(axis=2)
+
+	# Take the square root to get a true distance in RGB space.
+	dists_float = numpy.sqrt(dists_float)
+
+	# Allocate space to convert back to uint8, and convert back.
+	# This is better than writing
+	# 
+	#   dists_uint8 = dists_float.astype('uint8')
+	#
+	# Because it correctly handles overflow (values above 255).
+	dists_uint8 = numpy.empty(dists_float.shape, 'uint8')
+	cv2.convertScaleAbs(dists_float, dists_uint8, 1, 0)
+
+	# Create a mask by thresholding the distance image at 100.  All pixels
+	# with value less than 100 go to zero, and all pixels with value
+	# greater than or equal to 100 go to 255.
+	cv2.threshold(dists_uint8, 100, 255, cv2.THRESH_BINARY_INV, mask)
+	return mask
+
 def opening(img, kernalx = 3, kernaly = 3):
 	kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernalx, kernaly))
 	return cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
@@ -98,16 +135,18 @@ while 1:
 		break
 
 	# 1. Image Thresholding 
-	threshold = imageThreshold(frame)
+	# threshold = imageThreshold(frame)
+	threshold = colorThreshold(frame)
 
 	# 2. Morphological Operator
-	morph = opening(threshold)
+	# morph = opening(threshold)
 	
 	# 3. Connected Components Analysis + making mask
-	mask = make_mask(morph)
+	# mask = make_mask(morph)
+	mask = make_mask(threshold)
 
 	# 4. Refining the mask with another opening
-	mask = opening(mask,4,4)
+	# mask = opening(mask,4,4)
 	bmask = mask.view(numpy.bool)
 	display = numpy.zeros((frame.shape[0],frame.shape[1],3),'uint8')
 	display[bmask] = frame[bmask]
@@ -116,5 +155,7 @@ while 1:
 	# Write if we have a writer.
 	if writer:
 		writer.write(display)
+	
+	cv2.waitKey(5)
 
 
