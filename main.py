@@ -1,5 +1,7 @@
+##################################################
 # Project 1: Image Thresholding and Blob Tracking
 # Weite Liu & Fengjun Yang
+##################################################
 
 import cv2
 import numpy
@@ -8,10 +10,53 @@ import cvk2
 
 # Make a new window named 'Main'.
 win = 'Main'
-cv2.namedWindow(win)
+# cv2.namedWindow(win)
 
+input_filename = None
+
+# Open Video
+if len(sys.argv) < 2:
+	print "Execute main.py followed by the name of input video file"
+	print "Eg. main.py bunny.mp4"
+	sys.exit(1)
+
+elif len(sys.argv) >= 2:
+	input_filename = sys.argv[1]
+	capture = cv2.VideoCapture(input_filename)
+	if capture:
+		print 'Opened file', input_filename
+	# Quit program if failed to open video
+	if not capture or not capture.isOpen():
+		print 'Error opening video'
+		sys.exit(2)
+
+# Process every frame
+while 1:
+    # Get frame
+	ok, frame = capture.read(frame)
+
+	# Bail if none
+	if not ok or frame is None:
+		break
+
+	# 1. Image Thresholding 
+	# Take h, w of original image, convert into grayscale
+	h = frame.shape[0]
+	w = frame.shape[1]
+	display_gray = numpy.empty((h, w), 'uint8')
+
+	cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY, display_gray)
+
+	# Apply Threshold
+	threshold = cv2.adaptiveThreshold(display_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C,\
+			cv2.THRESH_BINARY, 11, 2)
+	cv2.imshow(display_gray)
+
+	# 2. Morphological Operator
+
+
+"""
 sources = []
-
 # Open images
 if len(sys.argv) > 2:
 
@@ -24,23 +69,9 @@ if len(sys.argv) > 2:
             pass
 # If open file unsuccesfully
 if len(sources) < num:
-    print "Execute main.py followed by the number of images and the corresponding sources"
+    print "Execute main.py followed by the number of images and\
+		the corresponding sources"
     print "E.g. python main.py 1 img/purpleflower.jpg"
     sys.exit(1)
-
-# 1. Image Thresholding 
-for n in range(num):
-    # Take h, w of original image, convert into grayscale
-    h = sources[n].shape[0]
-    w = sources[n].shape[1]
-    display_gray = numpy.empty((h, w), 'uint8')
-
-    cv2.cvtColor(sources[n], cv2.COLOR_RGB2GRAY, display_gray)
-    cv2.imwrite(sys.argv[n+2].strip(".jpg")+"_gray.jpg", display_gray)
-
-    # Apply Threshold
-    threshold = cv2.adaptiveThreshold(display_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2)
-    cv2.imwrite(sys.argv[n+2].strip(".jpg")+"_threshold.jpg", threshold)
-
-# 2. Morphological Operator
+"""
 
