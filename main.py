@@ -75,8 +75,18 @@ if not ok or frame is None:
 	sys.exit(3)
 
 # Initialize writer
+fps = 30
 fourcc, ext = (cv2.VideoWriter_fourcc('D','I','V','X'),'avi')
 filename = 'retreived' + ext
+h = frame.shape[0]
+w = frame.shape[1]
+
+writer = cv2.VideoWriter(filename, fourcc, fps, (w, h))
+if not writer:
+	print 'Error opening writer'
+else:
+	print 'Opened', filename, 'for output.'
+	writer.write(frame)
 
 # Process every frame
 while 1:
@@ -103,24 +113,10 @@ while 1:
 	display[bmask] = frame[bmask]
 	cv2.imshow('Video', display)
 
+	# Write if we have a writer.
+	if writer:
+		writer.write(frame)
+		
 	cv2.waitKey(5)
-""" 
-sources = []
-# Open images
-if len(sys.argv) > 2:
 
-	num = int(sys.argv[1])
-
-	for n in range(num):
-		try:
-			sources.append(cv2.imread(sys.argv[n+2]))
-		except:
-			pass
-# If open file unsuccesfully
-if len(sources) < num:
-	print "Execute main.py followed by the number of images and\
-		the corresponding sources"
-	print "E.g. python main.py 1 img/purpleflower.jpg"
-	sys.exit(1)
-"""
 
