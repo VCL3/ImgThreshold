@@ -58,7 +58,7 @@ while 1:
 	if not ok or frame is None:
 		break
 
-	# 1. Image Thresholding 
+	# 1. Image Thresholding
     imageThreshold(frame)
 	# 2. Morphological Operator
 
