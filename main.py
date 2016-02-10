@@ -8,6 +8,19 @@ import numpy
 import sys
 import cvk2
 
+def imageThreshold(frame):
+    # Take h, w of original image, convert into grayscale
+    h = frame.shape[0]
+    w = frame.shape[1]
+    display_gray = numpy.empty((h, w), 'uint8')
+
+    cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY, display_gray)
+
+    # Apply Threshold
+    threshold = cv2.adaptiveThreshold(display_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C,\
+            cv2.THRESH_BINARY, 11, 2)
+    cv2.imshow(display_gray)
+
 # Make a new window named 'Main'.
 win = 'Main'
 # cv2.namedWindow(win)
@@ -40,19 +53,10 @@ while 1:
 		break
 
 	# 1. Image Thresholding 
-	# Take h, w of original image, convert into grayscale
-	h = frame.shape[0]
-	w = frame.shape[1]
-	display_gray = numpy.empty((h, w), 'uint8')
-
-	cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY, display_gray)
-
-	# Apply Threshold
-	threshold = cv2.adaptiveThreshold(display_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C,\
-			cv2.THRESH_BINARY, 11, 2)
-	cv2.imshow(display_gray)
-
+    imageThreshold(frame)
 	# 2. Morphological Operator
+
+
 
 
 """
