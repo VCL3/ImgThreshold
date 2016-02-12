@@ -34,9 +34,10 @@ def colorThreshold(orig, RGB):
 
 	# Define the RGB color for the petals of the flower.
 	color = [[[RGB[0], RGB[1], RGB[2]]]]
+	color_mag = sqrt(RGB * RGB)
 
-	# For each pixel in the original image, subtract the petal color.
-	dists_float = orig_float - numpy.tile(color, (h, w, 1))
+	# Find the dot product of two colors
+	dot = orig_float * color 
 
 	# Square the differences.
 	dists_float = dists_float*dists_float
@@ -46,6 +47,7 @@ def colorThreshold(orig, RGB):
 
 	# Take the square root to get a true distance in RGB space.
 	dists_float = numpy.sqrt(dists_float)
+	dists_float = dists_float - numpy.tile(100,(h,w))
 
 	dists_uint8 = numpy.empty(dists_float.shape, 'uint8')
 	cv2.convertScaleAbs(dists_float, dists_uint8, 1, 0)
@@ -53,8 +55,8 @@ def colorThreshold(orig, RGB):
 	# Create a mask by thresholding the distance image at 100.  All pixels
 	# with value less than 100 go to zero, and all pixels with value
 	# greater than or equal to 100 go to 255.
-	cv2.threshold(dists_uint8, 100, 255, cv2.THRESH_BINARY_INV, mask)
-	return mask
+	cv2.threshold(dists_uint8, 220, 255, cv2.THRESH_BINARY_INV, mask)
+	return dists_uint8
 
 def opening(img, kernalx = 3, kernaly = 3):
 	"""
@@ -95,29 +97,29 @@ def adaptive(img):
 	threshold = cvtThreshold(img)
 
 	# 2. Morphological Operator
-	morph = opening(threshold,3,4)
+	morph = opening(threshold,5,5)
 
 	# 3. Connected Components Analysis + making mask
 	mask = make_mask(morph)
 	
 	# 4. Refining the mask with another opening
-	mask = opening(mask,4,4)
+	mask = opening(mask,6,6)
 	bmask = mask.view(numpy.bool)
 	display = numpy.zeros((img.shape[0],img.shape[1],3),'uint8')
-	display[bmask] = frame[bmask]
+	display[bmask] = img[bmask]
 
 	return display
 
 def color(img):
 	
 	# 1.Apply color threshold
-	threshold = colorThreshold(img,(186,10,30))
+	threshold = colorThreshold(img,(177,0,20))
 	# 2.Make a mask out of the color threshold
 	mask = make_mask(threshold)
 	# 3.Get the final image
 	bmask = threshold.view(numpy.bool)
 	display = numpy.zeros((img.shape[0],img.shape[1],3),'uint8')
-	display[bmask] = frame[bmask]
+	display[bmask] = img[bmask]
 
 	return threshold
 
