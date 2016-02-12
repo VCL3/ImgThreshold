@@ -95,7 +95,7 @@ def adaptive(img):
 	threshold = cvtThreshold(img)
 
 	# 2. Morphological Operator
-	morph = opening(threshold)
+	morph = opening(threshold,3,4)
 
 	# 3. Connected Components Analysis + making mask
 	mask = make_mask(morph)
@@ -111,9 +111,9 @@ def adaptive(img):
 def color(img):
 	
 	# 1.Apply color threshold
-	threshold = colorThreshold(img,(174,183,94))
+	threshold = colorThreshold(img,(186,10,30))
 	# 2.Make a mask out of the color threshold
-#mask = make_mask(threshold)
+	mask = make_mask(threshold)
 	# 3.Get the final image
 	bmask = threshold.view(numpy.bool)
 	display = numpy.zeros((img.shape[0],img.shape[1],3),'uint8')
@@ -131,7 +131,7 @@ if len(sys.argv) < 3:
 	print "Eg. main.py bunny.mp4"
 	sys.exit(1)
 
-elif len(sys.argv) >= 2:
+elif len(sys.argv) > 2:
 	input_filename = sys.argv[1]
 	capture = cv2.VideoCapture(input_filename)
 	if capture:
@@ -140,6 +140,7 @@ elif len(sys.argv) >= 2:
 	if not capture or not capture.isOpened():
 		print 'Error opening video'
 		sys.exit(2)
+	useAdaptive = sys.argv[2] == '0'
 
 # Fetch the first frame
 ok, frame = capture.read()
@@ -172,11 +173,12 @@ while 1:
 
 	# Process the img
 	display = numpy.zeros((frame.shape[0],frame.shape[1],3),'uint8')
-	if sys.argv[2] == 1:
+	if useAdaptive:
 		display = adaptive(frame)
 	else:
 		display = color(frame)
 
+	# Project the frame
 	cv2.imshow('Video', display)
 	cv2.waitKey(5)
 
