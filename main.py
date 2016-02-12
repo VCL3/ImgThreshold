@@ -77,41 +77,34 @@ def make_mask(img):
 		# Draw the contour as a colored region on the display image.
 		cv2.drawContours(display, contours, j, (255, 255, 255), -1)
 
-		# Compute some statistics about this contour.
-#info = cvk2.getcontourinfo(contours[j])
-
-		# Mean location and basis vectors can be useful.
-		#mu = info['mean']
-		#b1 = info['b1']
-		#b2 = info['b2']
-
 	return display, contours
 
-def adaptive(img):
+def adaptive(img, tracking):
 	# 1. Image Thresholding 
 	threshold = cvtThreshold(img)
 
 	# 2. Morphological Operator
-	morph = opening(threshold,5,5)
+	morph = opening(threshold,3,3)
 
 	# 3. Connected Components Analysis + making mask
 	mask, contours = make_mask(morph)
 	
 	# 4. Refining the mask with another opening
-	mask = opening(mask,6,6)
+	mask = opening(mask,4,4)
 	bmask = mask.view(numpy.bool)
 	display = numpy.zeros((img.shape[0],img.shape[1],3),'uint8')
 	display[bmask] = img[bmask]
+
 	for contour in contours:
 		info = cvk2.getcontourinfo(contour)
-		cv2.circle(display, cvk2.a2ti(info['mean']), 5, (255,255,255))
+		cv2.circle(display, cvk2.a2ti(info['mean']), 2, (255,255,255))
 
-	return display
+	return display, tracking
 
-def color(img):
+def color(img, tracking):
 	
-	# The color of our object
-	COLOR = (30,130,130)
+	# The color of our object, In order of !BGR!
+	COLOR = (100,255,200)
 
 	# 1.Apply color threshold
 	threshold = colorThreshold(img,COLOR)
@@ -121,11 +114,12 @@ def color(img):
 	bmask = threshold.view(numpy.bool)
 	display = numpy.zeros((img.shape[0],img.shape[1], 3),'uint8')
 	display[bmask] = img[bmask]
+
 	for contour in contours:
 		info = cvk2.getcontourinfo(contour)
-		cv2.circle(display, cvk2.a2ti(info['mean']), 5, (255,255,255))
+		cv2.circle(tracking, cvk2.a2ti(info['mean']), 2, (255,255,255))
 
-	return display
+	return display, tracking
 
 # Open Video 
 input_filename = None
@@ -168,6 +162,7 @@ else:
 	writer.write(frame)
 
 # Process every frame
+tracking = numpy.zeros((frame.shape[0],frame.shape[1], 3),'uint8')
 while 1:
 	# Get frame
 	ok, frame = capture.read(frame)
@@ -179,9 +174,9 @@ while 1:
 	# Process the img
 	display = numpy.zeros((frame.shape[0],frame.shape[1], 3),'uint8')
 	if useAdaptive:
-		display = adaptive(frame)
+		display, tracking = adaptive(frame, tracking)
 	else:
-		display = color(frame)
+		display, tracking = color(frame, tracking)
 
 	# Project the frame
 	cv2.imshow('Video', display)
@@ -191,3 +186,4 @@ while 1:
 	if writer:
 		writer.write(display)
 
+cv2.imwrite('tracking.jpg',tracking)

@@ -1,0 +1,18 @@
+The color we used for different videos are:
+(In order of BGR)
+
+Bottle:			(30,130,130)
+Book:			(30,10,180)
+Bag:			(100,255,200)
+
+To change colors, search in main for COLOR and replace the tuple
+------------------------------------------------------------------
+The parameters we used for adaptive threshold on the images are:
+
+Book: 			(5,5) opening + (6,6) opening on the mask
+Bottle:			(3,3) opening + (4,4) opening on the mask
+Bag:			did not find any parameter that works well
+
+------------------------------------------------------------------
+To see tracking effect, instead of displaying 'display', display
+tracking in the main while loop
