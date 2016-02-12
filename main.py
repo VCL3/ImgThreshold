@@ -22,7 +22,7 @@ def cvtThreshold(frame):
 	threshold = cv2.adaptiveThreshold(display_gray, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY_INV, 11, 2)
 	return threshold
 
-def colorThreshold(orig):
+def colorThreshold(orig, RGB):
 	""" 
 		Apply a threshold on the distance of each pixel from the color we want
 	"""
@@ -33,7 +33,7 @@ def colorThreshold(orig):
 	orig_float = orig.astype(float)
 
 	# Define the RGB color for the petals of the flower.
-	color = [[[174, 183, 94]]]
+	color = [[[RGB[0], RGB[1], RGB[2]]]]
 
 	# For each pixel in the original image, subtract the petal color.
 	dists_float = orig_float - numpy.tile(color, (h, w, 1))
@@ -111,15 +111,15 @@ def adaptive(img):
 def color(img):
 	
 	# 1.Apply color threshold
-	threshold = colorThreshold(img)
+	threshold = colorThreshold(img,(174,183,94))
 	# 2.Make a mask out of the color threshold
-	mask = make_mask(threshold)
+#mask = make_mask(threshold)
 	# 3.Get the final image
-	bmask = mask.view(numpy.bool)
+	bmask = threshold.view(numpy.bool)
 	display = numpy.zeros((img.shape[0],img.shape[1],3),'uint8')
 	display[bmask] = frame[bmask]
 
-	return display
+	return threshold
 
 
 # Open Video
@@ -172,7 +172,7 @@ while 1:
 
 	# Process the img
 	display = numpy.zeros((frame.shape[0],frame.shape[1],3),'uint8')
-	if sys.argv[2]:
+	if sys.argv[2] == 1:
 		display = adaptive(frame)
 	else:
 		display = color(frame)
