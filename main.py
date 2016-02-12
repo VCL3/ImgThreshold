@@ -8,8 +8,7 @@ import numpy
 import sys
 import cvk2
 
-def imageThreshold(frame):
-	# Take h, w of original image, convert into grayscale
+def imageThreshold(frame): # Take h, w of original image, convert into grayscale
 	h = frame.shape[0]
 	w = frame.shape[1]
 	display_gray = numpy.empty((h, w), 'uint8')
@@ -28,7 +27,7 @@ def colorThreshold(orig):
 	orig_float = orig.astype(float)
 
 	# Define the RGB color for the petals of the flower.
-	color = [[[34, 217, 0]]]
+	color = [[[174, 183, 94]]]
 
 	# For each pixel in the original image, subtract the petal color.
 	dists_float = orig_float - numpy.tile(color, (h, w, 1))
