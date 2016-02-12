@@ -34,26 +34,20 @@ def colorThreshold(orig, RGB):
 
 	# Define the RGB color for the petals of the flower.
 	color = [[[RGB[0], RGB[1], RGB[2]]]]
-	color_mag = sqrt(RGB * RGB)
 
-	# Find the dot product of two colors
-	dot = orig_float * color 
-
-	# Square the differences.
-	dists_float = dists_float*dists_float
+	# Find the difference of colors
+	dists_float = orig_float - numpy.tile(color, (h,w,1))
+	dists_float = dists_float * dists_float
 
 	# Sum across RGB to get one number per pixel. The result is an array
 	dists_float = dists_float.sum(axis=2)
 
 	# Take the square root to get a true distance in RGB space.
 	dists_float = numpy.sqrt(dists_float)
-	dists_float = dists_float - numpy.tile(100,(h,w))
 
 	dists_uint8 = numpy.empty(dists_float.shape, 'uint8')
 	cv2.convertScaleAbs(dists_float, dists_uint8, 1, 0)
-
-	# Create a mask by thresholding the distance image at 100.  All pixels
-	# with value less than 100 go to zero, and all pixels with value
+# Create a mask by thresholding the distance image at 100.  All pixels # with value less than 100 go to zero, and all pixels with value
 	# greater than or equal to 100 go to 255.
 	cv2.threshold(dists_uint8, 50, 255, cv2.THRESH_BINARY_INV, mask)
 	return mask
@@ -113,7 +107,7 @@ def adaptive(img):
 def color(img):
 	
 	# 1.Apply color threshold
-	threshold = colorThreshold(img,(177,0,20))
+	threshold = colorThreshold(img,(30,10,180))
 	# 2.Make a mask out of the color threshold
 	mask = make_mask(threshold)
 	# 3.Get the final image
