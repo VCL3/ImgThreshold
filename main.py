@@ -1,6 +1,6 @@
 ##################################################
 # Project 1: Image Thresholding and Blob Tracking
-# Weite Liu & Fengjun Yang
+# Weite Liu & Fengjun Yang 
 ##################################################
 
 import cv2
@@ -8,7 +8,10 @@ import numpy
 import sys
 import cvk2
 
-def imageThreshold(frame): # Take h, w of original image, convert into grayscale
+def cvtThreshold(frame): 
+	""" 
+		Convert a colored image into grayscale and apply adaptive threshold
+	"""
 	h = frame.shape[0]
 	w = frame.shape[1]
 	display_gray = numpy.empty((h, w), 'uint8')
@@ -20,6 +23,9 @@ def imageThreshold(frame): # Take h, w of original image, convert into grayscale
 	return threshold
 
 def colorThreshold(orig):
+	""" 
+		Apply a threshold on the distance of each pixel from the color we want
+	"""
 	h = orig.shape[0]
 	w = orig.shape[1]
 
@@ -41,12 +47,6 @@ def colorThreshold(orig):
 	# Take the square root to get a true distance in RGB space.
 	dists_float = numpy.sqrt(dists_float)
 
-	# Allocate space to convert back to uint8, and convert back.
-	# This is better than writing
-	# 
-	#   dists_uint8 = dists_float.astype('uint8')
-	#
-	# Because it correctly handles overflow (values above 255).
 	dists_uint8 = numpy.empty(dists_float.shape, 'uint8')
 	cv2.convertScaleAbs(dists_float, dists_uint8, 1, 0)
 
@@ -57,10 +57,18 @@ def colorThreshold(orig):
 	return mask
 
 def opening(img, kernalx = 3, kernaly = 3):
+	"""
+		Apply opening on a given image using an elliptical structuring element
+		default parameters for the radius of ellipse are 3 and 3 (a circle)
+	"""
 	kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (kernalx, kernaly))
 	return cv2.morphologyEx(img, cv2.MORPH_OPEN, kernel)
 
 def make_mask(img):
+	"""
+		Using findCountour and drawContour to draw a mask for the portion of 
+		the image we want
+	"""
 	work = img.copy()
 	display = numpy.zeros((img.shape[0], img.shape[1], 3),
 					  dtype='uint8')
@@ -82,15 +90,44 @@ def make_mask(img):
 
 	return display
 
-# Make a new window named 'Main'.
-win = 'Main'
-# cv2.namedWindow(win)
+def adaptive(img):
+	# 1. Image Thresholding 
+	threshold = cvtThreshold(img)
 
-input_filename = None
+	# 2. Morphological Operator
+	morph = opening(threshold)
+
+	# 3. Connected Components Analysis + making mask
+	mask = make_mask(morph)
+	
+	# 4. Refining the mask with another opening
+	mask = opening(mask,4,4)
+	bmask = mask.view(numpy.bool)
+	display = numpy.zeros((img.shape[0],img.shape[1],3),'uint8')
+	display[bmask] = frame[bmask]
+
+	return display
+
+def color(img):
+	
+	# 1.Apply color threshold
+	threshold = colorThreshold(img)
+	# 2.Make a mask out of the color threshold
+	mask = make_mask(threshold)
+	# 3.Get the final image
+	bmask = mask.view(numpy.bool)
+	display = numpy.zeros((img.shape[0],img.shape[1],3),'uint8')
+	display[bmask] = frame[bmask]
+
+	return display
+
 
 # Open Video
-if len(sys.argv) < 2:
-	print "Execute main.py followed by the name of input video file"
+input_filename = None
+
+if len(sys.argv) < 3:
+	print "Execute main.py followed by the name of input video file\
+			and thresholding method(0 for greyscale adaptiveThreshold, 1 for colorThreshold)"
 	print "Eg. main.py bunny.mp4"
 	sys.exit(1)
 
@@ -133,28 +170,15 @@ while 1:
 	if not ok or frame is None:
 		break
 
-	# 1. Image Thresholding 
-	# threshold = imageThreshold(frame)
-	threshold = colorThreshold(frame)
-
-	# 2. Morphological Operator
-	# morph = opening(threshold)
-	
-	# 3. Connected Components Analysis + making mask
-	# mask = make_mask(morph)
-	mask = make_mask(threshold)
-
-	# 4. Refining the mask with another opening
-	# mask = opening(mask,4,4)
-	bmask = mask.view(numpy.bool)
+	# Process the img
 	display = numpy.zeros((frame.shape[0],frame.shape[1],3),'uint8')
-	display[bmask] = frame[bmask]
+	if sys.argv[2]:
+		display = adaptive(frame)
+	else:
+		display = color(frame)
 	cv2.imshow('Video', display)
 
 	# Write if we have a writer.
 	if writer:
 		writer.write(display)
-	
-	cv2.waitKey(5)
-
 
