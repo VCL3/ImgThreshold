@@ -176,7 +176,9 @@ while 1:
 		display = adaptive(frame)
 	else:
 		display = color(frame)
+
 	cv2.imshow('Video', display)
+	cv2.waitKey(5)
 
 	# Write if we have a writer.
 	if writer:
