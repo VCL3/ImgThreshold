@@ -47,7 +47,7 @@ def colorThreshold(orig, RGB):
 
 	dists_uint8 = numpy.empty(dists_float.shape, 'uint8')
 	cv2.convertScaleAbs(dists_float, dists_uint8, 1, 0)
-# Create a mask by thresholding the distance image at 100.  All pixels # with value less than 100 go to zero, and all pixels with value
+	# Create a mask by thresholding the distance image at 100.  All pixels # with value less than 100 go to zero, and all pixels with value
 	# greater than or equal to 100 go to 255.
 	cv2.threshold(dists_uint8, 50, 255, cv2.THRESH_BINARY_INV, mask)
 	return mask
@@ -70,6 +70,7 @@ def make_mask(img):
 					  dtype='uint8')
 	img, contours, hierarchy = cv2.findContours(work, cv2.RETR_CCOMP,
 											  cv2.CHAIN_APPROX_SIMPLE)
+
 	# For each contour in the image
 	for j in range(len(contours)):
 
@@ -77,14 +78,14 @@ def make_mask(img):
 		cv2.drawContours(display, contours, j, (255, 255, 255), -1)
 
 		# Compute some statistics about this contour.
-		info = cvk2.getcontourinfo(contours[j])
+#info = cvk2.getcontourinfo(contours[j])
 
 		# Mean location and basis vectors can be useful.
-		mu = info['mean']
-		b1 = info['b1']
-		b2 = info['b2']
+		#mu = info['mean']
+		#b1 = info['b1']
+		#b2 = info['b2']
 
-	return display
+	return display, contours
 
 def adaptive(img):
 	# 1. Image Thresholding 
@@ -94,26 +95,35 @@ def adaptive(img):
 	morph = opening(threshold,5,5)
 
 	# 3. Connected Components Analysis + making mask
-	mask = make_mask(morph)
+	mask, contours = make_mask(morph)
 	
 	# 4. Refining the mask with another opening
 	mask = opening(mask,6,6)
 	bmask = mask.view(numpy.bool)
 	display = numpy.zeros((img.shape[0],img.shape[1],3),'uint8')
 	display[bmask] = img[bmask]
+	for contour in contours:
+		info = cvk2.getcontourinfo(contour)
+		cv2.circle(display, cvk2.a2ti(info['mean']), 5, (255,255,255))
 
 	return display
 
 def color(img):
 	
+	# The color of our object
+	COLOR = (30,130,130)
+
 	# 1.Apply color threshold
-	threshold = colorThreshold(img,(30,10,180))
+	threshold = colorThreshold(img,COLOR)
 	# 2.Make a mask out of the color threshold
-	mask = make_mask(threshold)
+	mask, contours = make_mask(threshold)
 	# 3.Get the final image
 	bmask = threshold.view(numpy.bool)
 	display = numpy.zeros((img.shape[0],img.shape[1], 3),'uint8')
 	display[bmask] = img[bmask]
+	for contour in contours:
+		info = cvk2.getcontourinfo(contour)
+		cv2.circle(display, cvk2.a2ti(info['mean']), 5, (255,255,255))
 
 	return display
 
@@ -130,7 +140,7 @@ elif len(sys.argv) > 2:
 	input_filename = sys.argv[1]
 	capture = cv2.VideoCapture(input_filename)
 	if capture:
-		print 'Opened file', input_filename
+		print 'Opened file', input_filename	
 	# Quit program if failed to open video
 	if not capture or not capture.isOpened():
 		print 'Error opening video'
