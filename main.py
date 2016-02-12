@@ -54,7 +54,7 @@ def colorThreshold(orig, RGB):
 	# with value less than 100 go to zero, and all pixels with value
 	# greater than or equal to 100 go to 255.
 	cv2.threshold(dists_uint8, 100, 255, cv2.THRESH_BINARY_INV, mask)
-	return mask
+	return dists_uint8
 
 def opening(img, kernalx = 3, kernaly = 3):
 	"""
@@ -111,16 +111,15 @@ def adaptive(img):
 def color(img):
 	
 	# 1.Apply color threshold
-	threshold = colorThreshold(img,(186,10,30))
+	threshold = colorThreshold(img,(204,251,127))
 	# 2.Make a mask out of the color threshold
 	mask = make_mask(threshold)
 	# 3.Get the final image
 	bmask = threshold.view(numpy.bool)
 	display = numpy.zeros((img.shape[0],img.shape[1],3),'uint8')
-	display[bmask] = frame[bmask]
+	display[bmask] = img[bmask]
 
 	return threshold
-
 
 # Open Video
 input_filename = None
