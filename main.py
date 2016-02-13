@@ -79,7 +79,7 @@ def make_mask(img):
 
 	return display, contours
 
-def adaptive(img, tracking):
+def adaptive(img, tracking, ifTrack):
 	# 1. Image Thresholding 
 	threshold = cvtThreshold(img)
 
@@ -97,14 +97,16 @@ def adaptive(img, tracking):
 
 	for contour in contours:
 		info = cvk2.getcontourinfo(contour)
-		cv2.circle(display, cvk2.a2ti(info['mean']), 2, (255,255,255))
+		cv2.circle(tracking, cvk2.a2ti(info['mean']), 2, (255,255,255))
+		if ifTrack:
+			cv2.circle(display, cvk2.a2ti(info['mean']), 2, (255,255,255))
 
 	return display, tracking
 
-def color(img, tracking):
+def color(img, tracking, ifTrack, RGB):
 	
 	# The color of our object, In order of !BGR!
-	COLOR = (100,255,200)
+	COLOR = RGB
 
 	# 1.Apply color threshold
 	threshold = colorThreshold(img,COLOR)
@@ -118,19 +120,20 @@ def color(img, tracking):
 	for contour in contours:
 		info = cvk2.getcontourinfo(contour)
 		cv2.circle(tracking, cvk2.a2ti(info['mean']), 2, (255,255,255))
+		if ifTrack:
+			cv2.circle(display, cvk2.a2ti(info['mean']), 2, (255,255,255))
 
 	return display, tracking
 
 # Open Video 
 input_filename = None
 
-if len(sys.argv) < 3:
-	print "Execute main.py followed by the name of input video file\
-			and thresholding method(0 for greyscale adaptiveThreshold, 1 for colorThreshold)"
+if len(sys.argv) < 2:
+	print "Execute main.py followed by the name of input video file"
 	print "Eg. main.py bunny.mp4"
 	sys.exit(1)
 
-elif len(sys.argv) > 2:
+elif len(sys.argv) >= 2:
 	input_filename = sys.argv[1]
 	capture = cv2.VideoCapture(input_filename)
 	if capture:
@@ -139,7 +142,6 @@ elif len(sys.argv) > 2:
 	if not capture or not capture.isOpened():
 		print 'Error opening video'
 		sys.exit(2)
-	useAdaptive = sys.argv[2] == '0'
 
 # Fetch the first frame
 ok, frame = capture.read()
@@ -161,8 +163,16 @@ else:
 	print 'Opened', filename, 'for output.'
 	writer.write(frame)
 
-# Process every frame
+# Variables that store print information
 tracking = numpy.zeros((frame.shape[0],frame.shape[1], 3),'uint8')
+useColor = True
+showTrack = True
+
+# Ask for a color
+RGB = raw_input("What is the object's color?\nPlease input a tuple in the order of BGR,(eg. (30,20,122))\n")
+RGB = eval(RGB)
+
+# Process every frame
 while 1:
 	# Get frame
 	ok, frame = capture.read(frame)
@@ -173,14 +183,23 @@ while 1:
 
 	# Process the img
 	display = numpy.zeros((frame.shape[0],frame.shape[1], 3),'uint8')
-	if useAdaptive:
-		display, tracking = adaptive(frame, tracking)
+	if useColor:
+		display, tracking = color(frame, tracking, showTrack, RGB)
 	else:
-		display, tracking = color(frame, tracking)
+		display, tracking = adaptive(frame, tracking, showTrack)
 
 	# Project the frame
 	cv2.imshow('Video', display)
-	cv2.waitKey(5)
+
+	# Interaction
+	key = cv2.waitKey(15) - 32
+
+	if key == ord('C'):
+		useColor = True
+	if key == ord('A'):
+		useColor = False
+	if key == ord('T'):
+		showTrack = not showTrack
 
 	# Write if we have a writer.
 	if writer:

@@ -1,3 +1,13 @@
+Usage:
+
+python main.py filename
+
+When the program is running, you can press
+	- A		to switch to adaptive threshold
+	- C		to switch to color threshold
+	- T		to toggle between tracking on/off 
+
+-----------------------------------------------------------------
 The color we used for different videos are:
 (In order of BGR)
 
@@ -14,5 +24,3 @@ Bottle:			(3,3) opening + (4,4) opening on the mask
 Bag:			did not find any parameter that works well
 
 ------------------------------------------------------------------
-To see tracking effect, instead of displaying 'display', display
-tracking in the main while loop
